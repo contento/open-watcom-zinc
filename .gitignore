@@ -1,0 +1,11 @@
+# Build output
+*.obj
+*.err
+*.map
+demo.exe
+
+# Downloaded / built dependencies (run scripts/setup.sh or setup.bat to recreate)
+vendor/
+
+# macOS
+.DS_Store

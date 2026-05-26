@@ -4,14 +4,18 @@
 #   wmake release   — optimised build
 #   wmake clean     — remove generated files
 #
-# Required environment variables:
-#   WATCOM    — Open Watcom install root  (e.g. /opt/watcom)
-#   ZINC_HOME — Open Zinc root with include/ and lib/ subdirs
+# ZINC_HOME is resolved automatically from vendor/zinc if not set.
+# Run scripts/setup.sh (Unix) or scripts/setup.bat (Windows) first.
 
 TARGET   = demo.exe
 
 CXX      = wpp386
 LINKER   = wlink
+
+# Fall back to vendored Zinc when ZINC_HOME is not set in the environment
+!ifndef ZINC_HOME
+ZINC_HOME = vendor\zinc
+!endif
 
 ZINC_INC = $(ZINC_HOME)\include
 ZINC_LIB = $(ZINC_HOME)\lib\zinc32d.lib

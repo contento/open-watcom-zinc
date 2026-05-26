@@ -1,0 +1,87 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Open Watcom — official action sets WATCOM, PATH, INCLUDE, LIB
+      # -----------------------------------------------------------------------
+      - name: Setup Open Watcom
+        uses: open-watcom/setup-watcom@v2
+        with:
+          version: "2.0"
+
+      # -----------------------------------------------------------------------
+      # Open Zinc — cache the zip so we don't hit openzinc.com every run
+      # -----------------------------------------------------------------------
+      - name: Cache Open Zinc
+        id: cache-zinc
+        uses: actions/cache@v4
+        with:
+          path: vendor/zinc
+          key: open-zinc-OZ1
+
+      - name: Download Open Zinc
+        if: steps.cache-zinc.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p vendor/zinc
+          curl -fsSL http://www.openzinc.com/Downloads/OZ1.zip -o /tmp/OZ1.zip
+          unzip /tmp/OZ1.zip -d vendor/zinc
+
+      # -----------------------------------------------------------------------
+      # Build Open Zinc for the DOS/4GW 32-bit target
+      # (skipped if the cache already contains a built library)
+      # -----------------------------------------------------------------------
+      - name: Build Open Zinc (Unix)
+        if: runner.os == 'Linux' && steps.cache-zinc.outputs.cache-hit != 'true'
+        working-directory: vendor/zinc
+        run: wmake -f makefile.ow target=dos4g
+
+      - name: Build Open Zinc (Windows)
+        if: runner.os == 'Windows' && steps.cache-zinc.outputs.cache-hit != 'true'
+        working-directory: vendor/zinc
+        shell: cmd
+        run: wmake -f makefile.ow target=dos4g
+
+      # -----------------------------------------------------------------------
+      # Build the demo
+      # -----------------------------------------------------------------------
+      - name: Build demo (Unix)
+        if: runner.os == 'Linux'
+        env:
+          ZINC_HOME: ${{ github.workspace }}/vendor/zinc
+        run: wmake
+
+      - name: Build demo (Windows)
+        if: runner.os == 'Windows'
+        env:
+          ZINC_HOME: ${{ github.workspace }}\vendor\zinc
+        shell: cmd
+        run: wmake
+
+      # -----------------------------------------------------------------------
+      # Upload demo.exe as a build artifact
+      # -----------------------------------------------------------------------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-exe-${{ matrix.os }}
+          path: demo.exe
+          if-no-files-found: error
