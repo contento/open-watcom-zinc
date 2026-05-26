@@ -21,17 +21,23 @@ require() {
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
+# ow-snapshot.tar.xz contains host binaries for all platforms; pick the right subdir.
+# There is no separate macOS asset — the snapshot is the canonical download.
 case "$OS" in
     Darwin)
-        OW_ASSET="open-watcom-2_0-c-macosx-x64.tar.gz"
-        OW_BINDIR="binl64"
+        # bino64 = macOS Intel x64, armo64 = macOS Apple Silicon
+        if [ "$ARCH" = "arm64" ]; then
+            OW_BINDIR="armo64"
+        else
+            OW_BINDIR="bino64"
+        fi
         ;;
     Linux)
         if [ "$ARCH" = "x86_64" ]; then
-            OW_ASSET="open-watcom-2_0-c-linux-x64.tar.gz"
             OW_BINDIR="binl64"
+        elif [ "$ARCH" = "aarch64" ]; then
+            OW_BINDIR="arml64"
         else
-            OW_ASSET="open-watcom-2_0-c-linux-x86.tar.gz"
             OW_BINDIR="binl"
         fi
         ;;
@@ -41,7 +47,7 @@ case "$OS" in
 esac
 
 OW_DIR="$VENDOR_DIR/watcom"
-OW_RELEASES="https://github.com/open-watcom/open-watcom-v2/releases/latest/download"
+OW_SNAPSHOT_URL="https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz"
 
 # ── Open Watcom ─────────────────────────────────────────────────────────────
 require curl
@@ -50,36 +56,27 @@ require tar
 if [ -d "$OW_DIR/$OW_BINDIR" ]; then
     info "Open Watcom already present at $OW_DIR"
 else
-    info "Downloading Open Watcom ($OW_ASSET)..."
+    info "Downloading Open Watcom snapshot..."
     mkdir -p "$OW_DIR"
-    curl -fsSL "$OW_RELEASES/$OW_ASSET" -o /tmp/owatcom.tar.gz
-    tar -xf /tmp/owatcom.tar.gz -C "$OW_DIR" --strip-components=1
-    rm /tmp/owatcom.tar.gz
+    curl -fsSL "$OW_SNAPSHOT_URL" -o /tmp/owatcom.tar.xz
+    tar -xf /tmp/owatcom.tar.xz -C "$OW_DIR" --strip-components=1
+    rm /tmp/owatcom.tar.xz
     info "Open Watcom installed → $OW_DIR"
 fi
 
 # ── Open Zinc ───────────────────────────────────────────────────────────────
+# OZ1.zip is a pre-built binary distribution — no compilation required.
 require unzip
 
-if [ -f "$ZINC_DIR/.built" ]; then
-    info "Open Zinc already built at $ZINC_DIR"
+if [ -f "$ZINC_DIR/LIB/OW19/D32_ZIL.LIB" ]; then
+    info "Open Zinc already present at $ZINC_DIR"
 else
-    if [ ! -f "$ZINC_DIR/.extracted" ]; then
-        info "Downloading Open Zinc..."
-        mkdir -p "$ZINC_DIR"
-        curl -fsSL "$ZINC_URL" -o /tmp/OZ1.zip
-        unzip -q /tmp/OZ1.zip -d "$ZINC_DIR"
-        rm /tmp/OZ1.zip
-        touch "$ZINC_DIR/.extracted"
-        info "Open Zinc extracted → $ZINC_DIR"
-    fi
-
-    info "Building Open Zinc for DOS/4GW..."
-    export WATCOM="$OW_DIR"
-    export PATH="$OW_DIR/$OW_BINDIR:$PATH"
-    (cd "$ZINC_DIR" && wmake -f makefile.ow target=dos4g)
-    touch "$ZINC_DIR/.built"
-    info "Open Zinc built."
+    info "Downloading Open Zinc..."
+    mkdir -p "$ZINC_DIR"
+    curl -fsSL "$ZINC_URL" -o /tmp/OZ1.zip
+    unzip -q /tmp/OZ1.zip -d "$ZINC_DIR"
+    rm /tmp/OZ1.zip
+    info "Open Zinc ready → $ZINC_DIR"
 fi
 
 # ── print env exports ────────────────────────────────────────────────────────

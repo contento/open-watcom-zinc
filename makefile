@@ -17,8 +17,8 @@ LINKER   = wlink
 ZINC_HOME = vendor\zinc
 !endif
 
-ZINC_INC = $(ZINC_HOME)\include
-ZINC_LIB = $(ZINC_HOME)\lib\zinc32d.lib
+ZINC_INC = $(ZINC_HOME)\INCLUDE
+ZINC_LIB = $(ZINC_HOME)\LIB\OW19\D32_ZIL.LIB
 
 # Debug flags (default)
 CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d2 &
