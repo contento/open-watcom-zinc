@@ -1,11 +1,10 @@
 #!/bin/sh
-# run-headless.sh - Launch DOSBox-X headlessly (no window) on macOS/Linux
-# Usage: sh run-headless.sh
-# Runs demo.exe inside DOSBox-X; exits when the app quits normally.
+# run.sh - Launch DOSBox-X with the project config (macOS / Linux host)
+# Usage: sh run.sh
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEMO_EXE="$SCRIPT_DIR/demo.exe"
-CONF="$SCRIPT_DIR/dosbox-x-headless.conf"
+CONF="$SCRIPT_DIR/dosbox-x.conf"
 
 if [ ! -f "$DEMO_EXE" ]; then
     echo "ERROR: demo.exe not found. Build first: wmake" >&2
@@ -34,8 +33,6 @@ if [ -z "$DOSBOXX" ]; then
     exit 1
 fi
 
-export SDL_VIDEODRIVER=dummy
-export SDL_AUDIODRIVER=dummy
-
-echo "Launching DOSBox-X headlessly..."
+echo "Launching : $DOSBOXX"
+echo "Config    : $CONF"
 "$DOSBOXX" -conf "$CONF"
