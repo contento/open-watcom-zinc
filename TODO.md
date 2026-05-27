@@ -53,6 +53,22 @@
   - Shows app name, version, target info ("DOS/4GW 386 Extended")
   - OK button closes it
 
+## Phase 3b: WCC Graphics Mode (next demo target)
+
+- [ ] **3b.1** Switch Zinc library build to WCC graphics display
+  - In `scripts/build-zinc-ow2.sh`: compile `z_app.CPP` with `-dWCC` (not `-dZIL_TEXT_ONLY`)
+  - Add `d_wccdsp` back to SOURCES in build script (`UI_WCC_DISPLAY` implementation)
+  - Rebuild `vendor/zinc/LIB/OW2/D32_ZIL.LIB`
+  - The `graph.lib` aliases already in the makefile cover all WCC display functions
+
+- [ ] **3b.2** Target 640×480 16-color as baseline graphics mode
+  - `_VRES16COLOR` — standard VGA, no VESA required, stable in DOSBox-X
+  - If higher resolution needed: 800×600 with `machine=svga_s3` and `vesa_oldvbe=false` in DOSBox-X conf
+
+- [ ] **3b.3** Verify WCC fallback path
+  - `z_app.CPP` with `-dWCC` automatically falls back to `UI_TEXT_DISPLAY` if graphics init fails
+  - Test on both graphics and text-mode DOSBox-X configs
+
 ## Phase 4: DOSBox-X Integration & Testing
 
 - [ ] **4.1** Verify `demo.exe` launches from DOSBox-X via `run.bat`
@@ -84,7 +100,8 @@
 
 ## Known Risks / Notes
 
-- Open Zinc's DOS text-mode driver (`UI_TEXT_DISPLAY`) and DOS graphics driver differ; keep to text mode for broadest DOSBox-X compatibility.
+- Current build uses `UI_TEXT_DISPLAY` (`-dZIL_TEXT_ONLY`). Switch to `UI_WCC_DISPLAY` (`-dWCC`) for graphics demos — see Phase 3b. The wlink alias directives in the makefile already cover both display modes.
+- For WCC graphics: target 640×480 16-color (`_VRES16COLOR`) for stability; SVGA (800×600+) needs `vesa_oldvbe=false` in DOSBox-X conf.
 - DOS/4GW is included with Open Watcom but check version — newer DOS4GW.EXE may need to be distributed alongside `demo.exe` on real DOS.
 - Open Watcom's C++ exception support is off by default for DOS targets; Zinc does not use exceptions, so this is fine.
 - Long file names are not available under plain DOS 6.x — all source files and output names must be 8.3.
