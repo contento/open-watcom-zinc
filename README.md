@@ -134,8 +134,18 @@ dosbox-x -conf dosbox-x.conf
 ```
 
 **Windows:**
-```bat
-dosbox-x.exe -conf dosbox-x.conf
+```powershell
+.\run.ps1
+```
+
+**Headless (no window) — macOS / Linux:**
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy dosbox-x -conf dosbox-x-headless.conf
+```
+
+**Headless — Windows:**
+```powershell
+.\run-headless.ps1
 ```
 
 The repo directory is mounted as `C:\` automatically. Inside DOSBox-X:
