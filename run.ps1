@@ -4,8 +4,19 @@
 
 param(
     [Alias('s')]
-    [switch]$Shell
+    [switch]$Shell,
+    [Alias('h')]
+    [switch]$Help
 )
+
+if ($Help) {
+    Write-Host "Usage: .\run.ps1 [options]"
+    Write-Host ""
+    Write-Host "Options:"
+    Write-Host "  -s, -Shell   Drop to DOS prompt (skip demo.exe)"
+    Write-Host "  -h, -Help    Show this help"
+    exit 0
+}
 
 $ErrorActionPreference = 'Stop'
 

@@ -8,9 +8,16 @@ DEMO_EXE="$SCRIPT_DIR/demo.exe"
 CONF="$SCRIPT_DIR/dosbox-x.conf"
 
 SHELL_ONLY=0
-if [ "$1" = "-s" ] || [ "$1" = "--shell" ]; then
-    SHELL_ONLY=1
-fi
+case "$1" in
+    -s|--shell) SHELL_ONLY=1 ;;
+    -h|--help)
+        echo "Usage: sh run.sh [options]"
+        echo ""
+        echo "Options:"
+        echo "  -s, --shell   Drop to DOS prompt (skip demo.exe)"
+        echo "  -h, --help    Show this help"
+        exit 0 ;;
+esac
 
 if [ "$SHELL_ONLY" = "0" ] && [ ! -f "$DEMO_EXE" ]; then
     echo "ERROR: demo.exe not found. Build first: wmake" >&2
