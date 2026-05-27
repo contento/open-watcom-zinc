@@ -3,9 +3,22 @@
 *.err
 *.map
 demo.exe
+tutorials/hello/*.exe
+
+# Debug and test artifacts in project root
+*.LOG
+*.log
+*.lst
+*.FON
+*.fon
+graphtest.exe
+nograph_test.exe
 
 # Downloaded / built dependencies (run scripts/setup.sh or setup.bat to recreate)
 vendor/
+
+# AI memory files
+memory/
 
 # macOS
 .DS_Store

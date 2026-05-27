@@ -47,7 +47,7 @@ z_stdarg z_stored z_storer z_storew z_string z_sys
 z_table z_table1 z_table2 z_tbar z_text z_time z_time1 z_timer
 z_title z_utils z_utime z_utime1 z_vlist
 z_win z_win1 z_win2 z_win3 z_win4
-d_print
+d_print d_wccdsp
 "
 
 OBJS=""
@@ -69,10 +69,10 @@ for base in $SOURCES; do
     fi
 done
 
-# z_app.CPP must be compiled with ZIL_TEXT_ONLY so the app uses UI_TEXT_DISPLAY
-# (backed by i_wccat.obj) instead of UI_GRAPHICS_DISPLAY which is not linked.
-printf "  Compiling %-25s (ZIL_TEXT_ONLY) ... " "z_app.CPP"
-if wpp386 $CFLAGS -dZIL_TEXT_ONLY -fo="$OBJ_DIR/z_app.obj" "$ZINC_SRC/z_app.CPP" 2>/tmp/zinc_compile_err; then
+# z_app.CPP compiled with -dWCC: tries UI_WCC_DISPLAY first, falls back to
+# UI_TEXT_DISPLAY automatically if the WCC display fails to initialize.
+printf "  Compiling %-25s (WCC) ... " "z_app.CPP"
+if wpp386 $CFLAGS -dWCC -fo="$OBJ_DIR/z_app.obj" "$ZINC_SRC/z_app.CPP" 2>/tmp/zinc_compile_err; then
     echo "ok"
 else
     echo "FAILED"

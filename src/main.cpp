@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 
+static FILE *_dbg = NULL;
+static void dbg(const char *msg) {
+    if (!_dbg) _dbg = fopen("DEBUG.LOG", "w");
+    if (_dbg) { fputs(msg, _dbg); fputs("\n", _dbg); fflush(_dbg); }
+}
+
 class DemoWindow;
 class AboutDialog;
 
@@ -113,7 +119,9 @@ public:
 
         case ID_BTN_EXIT:
         case ID_MENU_EXIT:
-            return UIW_WINDOW::Event(UI_EVENT(L_EXIT));
+            if (UI_WINDOW_OBJECT::eventManager)
+                UI_WINDOW_OBJECT::eventManager->Put(UI_EVENT(L_EXIT));
+            return (EVENT_TYPE)L_EXIT;
 
         case ID_MENU_ABOUT:
             if (UI_WINDOW_OBJECT::windowManager)
@@ -131,6 +139,13 @@ public:
 // ---------------------------------------------------------------------------
 int UI_APPLICATION::Main(void)
 {
+    dbg("Main() entered");
     windowManager->Add(new DemoWindow);
-    return (int)Control();
+    dbg("DemoWindow added - entering Control()");
+    int result = (int)Control();
+    char buf[64];
+    sprintf(buf, "Control() returned: %d", result);
+    dbg(buf);
+    if (_dbg) fclose(_dbg);
+    return result;
 }
