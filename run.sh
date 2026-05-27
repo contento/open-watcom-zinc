@@ -1,14 +1,30 @@
 #!/bin/sh
 # run.sh - Launch DOSBox-X with the project config (macOS / Linux host)
-# Usage: sh run.sh
+# Usage: sh run.sh        — build and run demo.exe
+#        sh run.sh -s     — drop to DOS prompt (no demo.exe)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEMO_EXE="$SCRIPT_DIR/demo.exe"
 CONF="$SCRIPT_DIR/dosbox-x.conf"
 
-if [ ! -f "$DEMO_EXE" ]; then
+SHELL_ONLY=0
+if [ "$1" = "-s" ] || [ "$1" = "--shell" ]; then
+    SHELL_ONLY=1
+fi
+
+if [ "$SHELL_ONLY" = "0" ] && [ ! -f "$DEMO_EXE" ]; then
     echo "ERROR: demo.exe not found. Build first: wmake" >&2
     exit 1
+fi
+
+if [ "$SHELL_ONLY" = "1" ]; then
+    CONF="$(mktemp /tmp/dosbox-shell-XXXXXX.conf)"
+    cat > "$CONF" << 'EOF'
+[autoexec]
+mount c .
+c:
+EOF
+    trap 'rm -f "$CONF"' EXIT
 fi
 
 # Locate dosbox-x: PATH first, then common macOS locations

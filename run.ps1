@@ -1,6 +1,11 @@
 # run.ps1 - Launch DOSBox-X with the project config (Windows host)
-# Usage: .\run.ps1
-# Requires DOSBox-X installed and on PATH, or in a standard location.
+# Usage: .\run.ps1        — build and run demo.exe
+#        .\run.ps1 -s     — drop to DOS prompt (no demo.exe)
+
+param(
+    [Alias('s')]
+    [switch]$Shell
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -8,9 +13,18 @@ $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $DemoExe     = Join-Path $ProjectRoot 'demo.exe'
 $Conf        = Join-Path $ProjectRoot 'dosbox-x.conf'
 
-if (-not (Test-Path $DemoExe)) {
+if (-not $Shell -and -not (Test-Path $DemoExe)) {
     Write-Error "demo.exe not found. Build first: wmake"
     exit 1
+}
+
+if ($Shell) {
+    $Conf = Join-Path $env:TEMP 'dosbox-shell.conf'
+    @"
+[autoexec]
+mount c .
+c:
+"@ | Set-Content $Conf
 }
 
 # Locate DOSBox-X — check PATH first, then common install locations
