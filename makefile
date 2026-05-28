@@ -21,6 +21,9 @@ OW_INC    = vendor/watcom/h
 OW_LIB    = vendor/watcom/lib386
 OW_LIBDOS = vendor/watcom/lib386/dos
 
+FONT_SRC  = $(ZINC_HOME)/BIN/HELVB.FON
+FONT_DST  = HELVB.FON
+
 !ifeq RELEASE 1
 CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d0 -s -ox &
            -I"$(ZINC_INC)" -I"$(OW_INC)"
@@ -31,10 +34,13 @@ CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d2 &
 
 OBJS = main.obj
 
-all: $(ZINC_LIB) $(TARGET) .symbolic
+all: $(ZINC_LIB) $(FONT_DST) $(TARGET) .symbolic
 
 $(ZINC_LIB):
 	sh scripts/build-zinc-ow2.sh
+
+$(FONT_DST): $(FONT_SRC)
+	cp "$(FONT_SRC)" "$(FONT_DST)"
 
 $(TARGET): $(OBJS)
 	$(LINKER) system dos4g &
