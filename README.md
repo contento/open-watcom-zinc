@@ -1,8 +1,8 @@
-# Open Watcom + Open Zinc — DOS/4GW Demo
+# Open Watcom + Open Zinc: DOS Examples
 
-A minimal C++ demo application built with **[Open Watcom 2.0](https://github.com/open-watcom/open-watcom-v2)** and the **[Open Zinc](http://www.openzinc.com/)** portable UI framework, targeting **32-bit DOS Extended** (DOS/4GW) on an 80386 CPU.
+A collection of example applications for **DOS/4GW 32-bit extended** mode, built with **[Open Watcom 2.0](https://github.com/open-watcom/open-watcom-v2)** and the **[Open Zinc](http://www.openzinc.com/)** portable UI framework.
 
-The binary runs on MS-DOS 6.x and is tested in **[DOSBox-X](https://dosbox-x.com)** configured as a 386 machine.
+All examples run on MS-DOS 6.x and are tested in **[DOSBox-X](https://dosbox-x.com)** configured as a 386 machine.
 
 ![Target](https://img.shields.io/badge/target-DOS%206.x%20%2F%20DOS%2F4GW-blue)
 ![CPU](https://img.shields.io/badge/CPU-80386%2B-green)
@@ -11,147 +11,92 @@ The binary runs on MS-DOS 6.x and is tested in **[DOSBox-X](https://dosbox-x.com
 
 ---
 
-## Screenshot
+## Examples
 
+### [hello-world](examples/hello-world/) — Start here
+
+A minimal tutorial showing the basics:
+
+- Creating a simple window
+- Adding UI elements
+- Handling events
+- Building and running
+
+```bash
+cd examples/hello-world
+wmake && sh run.sh
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Open Watcom + Open Zinc --- DOS/4GW 386 Demo                 File   Help  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Welcome! This app runs on DOS 6.x with 80386 extended memory.             │
-│                                                                             │
-│  Click the button below or type in the input field.                        │
-│                                                                             │
-│  Input:  [______________________________]                                   │
-│                                                                             │
-│  [ Click Me! ]    [ Echo Input ]    [    Exit    ]                         │
-└─────────────────────────────────────────────────────────────────────────────┘
+
+### [basic-demo](examples/basic-demo/) — Advanced features
+
+A feature-rich demo demonstrating:
+
+- Multiple UI components (input, text, menus)
+- Modal dialogs
+- Event handling and message passing
+- String manipulation and dynamic output
+- Debug logging
+
+```bash
+cd examples/basic-demo
+wmake && sh run.sh
+```
+
+### [basic-demo-text](examples/basic-demo-text/) — Text mode only
+
+Same feature-rich demo as basic-demo, but dedicated to **text-mode-only** functionality:
+
+- No graphics drivers
+- Open Zinc's text UI (`UIW_*` classes)
+- All features work in 80x25 terminal
+- Clean reference for text-mode DOS applications
+
+```bash
+cd examples/basic-demo-text
+wmake && sh run.sh
 ```
 
 ---
 
-## Features
+## Quick Start
 
-- Text-mode Zinc UI running under DOS/4GW 32-bit extended memory
-- Menu bar (File → Exit, Help → About)
-- Click counter button
-- Input field with echo-to-label feedback
-- Modal "About" dialog showing build target info
-- Builds with a single `wmake` command on any host platform
+### 1. Setup Environment
 
----
+**macOS (Homebrew):**
 
-## Getting Started
-
-**Open Watcom and Open Zinc are downloaded and built automatically** by the setup scripts. The only manual prerequisite is [DOSBox-X](https://dosbox-x.com) for running the final binary.
-
-### macOS / Linux
-
-```sh
-bash scripts/setup.sh
+```bash
+brew install open-watcom dosbox-x
+export WATCOM=$(brew --prefix open-watcom)
+export PATH=$WATCOM/binl64:$PATH
+export ZINC_HOME=/path/to/zinc      # install separately
 ```
 
-This will:
-1. Download Open Watcom from GitHub Releases into `vendor/watcom/`
-2. Download Open Zinc from [openzinc.com](http://www.openzinc.com/) into `vendor/zinc/`
-3. Build Open Zinc for the DOS/4GW target
-4. Print the env vars to add to your shell profile
+**Linux:**
 
-Then install DOSBox-X:
-
-```sh
-# macOS
-brew install dosbox-x
-
-# Debian / Ubuntu
-sudo apt install dosbox-x
-
-# Fedora / RHEL
-sudo dnf install dosbox-x
-```
-
-### Windows
-
-```bat
-scripts\setup.bat
-```
-
-Same steps as above using `curl` and PowerShell's `Expand-Archive` (built into Windows 10+).
-
-Then install DOSBox-X from [dosbox-x.com](https://dosbox-x.com).
-
-### Manual setup (advanced)
-
-If you prefer to manage the tools yourself, set these environment variables before running `wmake`:
-
-| Variable | macOS / Linux | Windows |
-|----------|---------------|---------|
-| Compiler root | `export WATCOM=/opt/watcom` | `set WATCOM=C:\WATCOM` |
-| Zinc root | `export ZINC_HOME=/opt/zinc` | `set ZINC_HOME=C:\zinc` |
-| PATH (64-bit host) | `$WATCOM/binl64` | `%WATCOM%\binnt64` |
-| PATH (32-bit Linux) | `$WATCOM/binl` | — |
-
-The `vendor/zinc` fallback is used automatically when `ZINC_HOME` is not set.
-
----
-
-## Building
-
-```sh
-# macOS / Linux
-cd open-watcom-zinc
-wmake           # debug build   → demo.exe
-wmake release   # optimised     → demo.exe (no debug info)
-wmake clean     # remove .obj / .exe
-```
-
-```bat
-REM Windows (cmd)
-cd open-watcom-zinc
-wmake           & REM debug build
-wmake release   & REM optimised
-wmake clean
-```
-
-`wmake` is the Open Watcom make utility — **not** GNU make.
-
----
-
-## Running in DOSBox-X
-
-The `dosbox-x.conf` in this repo configures:
-
-| Setting | Value |
-|---------|-------|
-| Machine | `svga_s3` |
-| DOS version | 6.22 |
-| CPU | 386 dynamic core |
-| Memory | 16 MB |
-
-**macOS / Linux:**
-```sh
-dosbox-x -conf dosbox-x.conf
+```bash
+# Install from your package manager or download from GitHub
+export WATCOM=/opt/watcom
+export PATH=$WATCOM/binl:$PATH
+export ZINC_HOME=/opt/zinc
 ```
 
 **Windows:**
-```powershell
-.\run.ps1
-```
 
-**Headless (no window) — macOS / Linux:**
-```sh
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy dosbox-x -conf dosbox-x-headless.conf
-```
+Download and install from official sources:
+- Open Watcom: https://github.com/open-watcom/open-watcom-v2/releases
+- DOSBox-X: https://dosbox-x.com
 
-**Headless — Windows:**
-```powershell
-.\run-headless.ps1
-```
+Then set environment variables in System → Environment Variables.
 
-The repo directory is mounted as `C:\` automatically. Inside DOSBox-X:
+See [docs/SETUP.md](docs/SETUP.md) for detailed instructions.
 
-```
-C:\> run.bat
+### 2. Build & Run
+
+```bash
+cd examples/hello-world
+wmake              # compile and link
+sh run.sh          # launch in DOSBox-X (macOS/Linux)
+# or: run.bat      # (Windows)
 ```
 
 ---
@@ -160,29 +105,135 @@ C:\> run.bat
 
 ```
 open-watcom-zinc/
-├── src/
-│   └── main.cpp               application source
-├── makefile                   wmake build file (Open Watcom syntax)
-├── dosbox-x.conf              DOSBox-X machine config
-├── run.bat                    launch script (runs inside DOSBox-X)
-├── CLAUDE.md                  AI assistant context
-├── .github/
-│   └── copilot-instructions.md  GitHub Copilot rules
-└── TODO.md                    development plan
+├── examples/
+│   ├── hello-world/            ← start here
+│   │   ├── src/main.cpp
+│   │   ├── makefile
+│   │   ├── README.md
+│   │   ├── dosbox-x.conf
+│   │   ├── run.sh
+│   │   └── run.bat
+│   ├── basic-demo/             ← advanced features
+│   │   ├── src/main.cpp
+│   │   ├── makefile
+│   │   ├── README.md
+│   │   ├── dosbox-x.conf
+│   │   ├── run.sh
+│   │   └── run.bat
+│   └── basic-demo-text/        ← text mode only
+│       ├── src/main.cpp
+│       ├── makefile
+│       ├── README.md
+│       ├── dosbox-x.conf
+│       ├── run.sh
+│       └── run.bat
+├── docs/
+│   ├── SETUP.md                ← environment setup
+│   ├── BUILDING.md             ← build details
+│   └── CONTRIBUTING.md         ← add new examples
+├── scripts/
+│   └── build-zinc-ow2.sh       ← shared build script
+├── vendor/                     ← shared dependencies
+│   ├── zinc/
+│   └── watcom/
+├── CLAUDE.md                   ← codebase conventions
+├── LICENSE
+└── TODO.md
+```
+
+Each example is **self-contained** with its own source, makefile, and run scripts. All examples **share** the vendor libraries and build utilities.
+
+---
+
+## Features
+
+- **Text-mode UI** — Open Zinc running under DOS/4GW 32-bit extended memory
+- **Cross-platform build** — Compile on macOS, Linux, or Windows to produce DOS binaries
+- **Self-contained examples** — Each example includes everything needed to build and run
+- **DOSBox-X integration** — Launch directly from the host with `sh run.sh` or `run.bat`
+- **Progressive learning** — Start with hello-world, advance to feature-rich demos
+
+---
+
+## Tech Stack
+
+| Component | Details |
+| --- | --- |
+| Compiler | Open Watcom 2.0 (`wpp386` for C++, `wcc386` for C) |
+| Linker | `wlink` with `system dos4g` target |
+| DOS Extender | DOS/4GW (bundled with Open Watcom) |
+| UI Framework | Open Zinc (text-mode DOS) |
+| Runtime | DOS 6.x on 80386+ CPU (or DOSBox-X emulator) |
+| Language | C++98 for maximum Zinc compatibility |
+
+---
+
+## Building
+
+Each example builds independently:
+
+```bash
+cd examples/[example-name]
+wmake              # debug build
+wmake release      # optimized build
+wmake clean        # clean up
+```
+
+The makefile automatically:
+1. Resolves shared vendor paths
+2. Builds Zinc if needed
+3. Compiles with DOS/4GW settings
+4. Links with required aliases
+
+See [docs/BUILDING.md](docs/BUILDING.md) for detailed build instructions and troubleshooting.
+
+---
+
+## Running in DOSBox-X
+
+**From the host (macOS / Linux):**
+
+```bash
+cd examples/hello-world
+sh run.sh          # build + launch
+sh run.sh -s       # launch shell only (no auto-run)
+```
+
+**From the host (Windows):**
+
+```batch
+cd examples\hello-world
+run.bat            # build + launch
+```
+
+**Inside DOSBox-X:**
+
+```
+C:\> demo.exe      # run directly
+C:\> run.bat       # or use the batch launcher
 ```
 
 ---
 
-## Compiler Flags Reference
+## Documentation
 
-| Flag | Effect |
-|------|--------|
-| `-bt=dos4g` | Target DOS/4GW 32-bit extended |
-| `-3` | Emit 80386 instructions |
-| `-mf` | Flat 32-bit memory model |
-| `-fp3` | 387 FPU code |
-| `-d2` | Full debug info (debug build) |
-| `-ox -s` | Optimise + no stack checks (release) |
+- [CLAUDE.md](CLAUDE.md) — Codebase structure and coding conventions
+- [docs/SETUP.md](docs/SETUP.md) — Environment setup and prerequisites
+- [docs/BUILDING.md](docs/BUILDING.md) — Build system details and troubleshooting
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — How to add new examples
+- Example READMEs — Learn from each example's documentation
+
+---
+
+## Coding Conventions
+
+- **C++98** — No C++11+ features (maximum Zinc compatibility)
+- **Zinc objects** — Use `UIW_*` classes for all UI
+- **No direct DOS calls** — Access DOS through the runtime, never `int 21h` from UI code
+- **Event-driven** — Override `Event()` in `UIW_WINDOW` subclasses
+- **wmake only** — Use Open Watcom's `wmake`, not GNU make
+
+See [CLAUDE.md](CLAUDE.md) for full conventions and compiler flag reference.
 
 ---
 
@@ -192,5 +243,5 @@ This project is licensed under the **GNU Lesser General Public License v2.1 or l
 See [LICENSE](LICENSE) for the full text.
 
 **Upstream licenses:**
-- Open Watcom is licensed under the [Sybase Open Watcom Public License 1.0](https://github.com/open-watcom/open-watcom-v2/blob/master/license.txt).
-- Open Zinc is licensed under the LGPL — see [openzinc.com](http://www.openzinc.com/) for details.
+- Open Watcom: [Sybase Open Watcom Public License 1.0](https://github.com/open-watcom/open-watcom-v2/blob/master/license.txt)
+- Open Zinc: LGPL — see [openzinc.com](http://www.openzinc.com/)
