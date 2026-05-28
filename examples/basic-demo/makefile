@@ -1,4 +1,4 @@
-# Open Watcom wmake - DOS/4GW 32-bit target (text mode)
+# Open Watcom wmake - DOS/4GW 32-bit target (WCC graphics mode)
 # Usage:
 #   wmake           - debug build
 #   wmake release   - optimised build
