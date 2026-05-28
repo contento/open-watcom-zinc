@@ -1,8 +1,12 @@
-# Open Watcom + Open Zinc DOS Demo
+# CLAUDE.md — Always use this file as the primary project reference.
+
+> **Instruction:** Always read and follow CLAUDE.md before any task in this project.
+
+# Open Watcom + Open Zinc DOS Examples
 
 ## Project Overview
 
-A demonstration application using **Open Watcom 2.0** compiler and **Open Zinc** UI framework, targeting **32-bit DOS Extended** (DOS/4GW) for DOS 6.x environments. The built binary must run correctly in **DOSBox-X** configured in 386 protected mode.
+A collection of example applications using **Open Watcom 2.0** compiler and **Open Zinc** UI framework, targeting **32-bit DOS Extended** (DOS/4GW) for DOS 6.x environments. All binaries run correctly in **DOSBox-X** configured in 386 protected mode.
 
 ## Tech Stack
 
@@ -19,56 +23,86 @@ A demonstration application using **Open Watcom 2.0** compiler and **Open Zinc**
 
 ```
 open-watcom-zinc/
-├── CLAUDE.md                  ← this file
-├── TODO.md                    ← development plan
+├── CLAUDE.md                      ← this file
+├── README.md                      ← overview & examples list
+├── TODO.md                        ← development plan
+├── docs/
+│   ├── BUILDING.md                ← detailed build instructions
+│   ├── SETUP.md                   ← environment setup
+│   └── CONTRIBUTING.md            ← how to add new examples
+├── examples/
+│   ├── hello-world/               ← minimal tutorial
+│   │   ├── src/main.cpp
+│   │   ├── makefile
+│   │   ├── README.md
+│   │   ├── dosbox-x.conf
+│   │   ├── run.sh
+│   │   └── run.bat
+│   └── basic-demo/                ← feature-rich demo
+│       ├── src/main.cpp
+│       ├── makefile
+│       ├── README.md
+│       ├── dosbox-x.conf
+│       ├── run.sh
+│       └── run.bat
+├── scripts/
+│   └── build-zinc-ow2.sh          ← shared build script
+├── vendor/                        ← shared dependencies
+│   ├── zinc/
+│   └── watcom/
 ├── .github/
-│   └── copilot-instructions.md
-├── src/
-│   └── main.cpp               ← application entry point
-├── makefile                   ← Open Watcom wmake build file
-├── dosbox-x.conf              ← DOSBox-X config for testing
-└── run.bat                    ← launch script inside DOSBox-X
+└── .gitignore
+```
+
+## Examples
+
+### hello-world
+
+Start here. A minimal Open Zinc application showcasing:
+- Basic window creation
+- Simple UI layout
+- Button event handling
+
+```bash
+cd examples/hello-world
+wmake && sh run.sh
+```
+
+### basic-demo
+
+A feature-rich demo with:
+- Multiple UI components (input fields, text output, menus)
+- Modal dialogs
+- Event handling and message passing
+- Debug logging
+
+```bash
+cd examples/basic-demo
+wmake && sh run.sh
 ```
 
 ## Prerequisites
 
-### On the host (macOS / Linux)
+See [docs/SETUP.md](docs/SETUP.md) for detailed environment setup instructions.
 
-1. **Open Watcom 2.0** installed, `$WATCOM` env var set to its root.
-   - macOS: install via Homebrew or download from https://github.com/open-watcom/open-watcom-v2/releases
-   - Add `$WATCOM/binl` (Linux) or `$WATCOM/binl64` (macOS) to `$PATH`
+### Quick Setup
 
-2. **Open Zinc** source compiled for DOS/4GW target.
-   - Set `$ZINC_HOME` to the Zinc root (where `include/` and `lib/` live).
-   - The DOS/4GW 32-bit library is typically `$ZINC_HOME/lib/zinc32d.lib`.
+1. **Open Watcom 2.0** — `$WATCOM` env var set to its root
+2. **Open Zinc** — `$ZINC_HOME` pointing to Zinc root (with `include/` and `lib/` subdirs)
+3. **DOSBox-X** — for testing
 
-3. **DOSBox-X** for testing.
-   - Use `dosbox-x.conf` in this repo.
+## Building & Running
 
-### Environment variables
+Each example is self-contained. To build and run:
 
-```sh
-export WATCOM=/opt/watcom          # Open Watcom root
-export PATH=$WATCOM/binl64:$PATH   # add compiler binaries
-export ZINC_HOME=/opt/zinc         # Open Zinc root
-export INCLUDE=$ZINC_HOME/include  # Zinc headers (optional, also set in makefile)
+```bash
+cd examples/hello-world    # or examples/basic-demo
+wmake                      # debug build
+sh run.sh                  # launch in DOSBox-X (macOS/Linux)
+run.bat                    # launch in DOSBox-X (Windows)
 ```
 
-## Building
-
-```sh
-cd open-watcom-zinc
-wmake                  # builds demo.exe
-wmake clean            # removes .obj and .exe
-```
-
-## Running in DOSBox-X
-
-```sh
-dosbox-x -conf dosbox-x.conf
-# inside DOSBox-X:
-C:\> run.bat
-```
+See [docs/BUILDING.md](docs/BUILDING.md) for detailed build instructions.
 
 ## Coding Conventions
 

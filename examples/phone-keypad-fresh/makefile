@@ -1,15 +1,14 @@
-# Open Watcom wmake - DOS/4GW 32-bit target (text mode)
+# Open Watcom wmake - DOS/4GW 32-bit target
+# Phone Keypad example
+#
 # Usage:
 #   wmake           - debug build
 #   wmake release   - optimised build
 #   wmake clean     - remove generated files
 #
 # ZINC_HOME is resolved automatically from ../../vendor/zinc if not set.
-#
-# NOTE: HELVB.FON must be in the same directory as demo.exe at runtime
-# so _registerfonts() succeeds in the WCC display initialisation.
 
-TARGET   = demo.exe
+TARGET   = keypad.exe
 
 CXX      = wpp386
 LINKER   = wlink
@@ -24,9 +23,6 @@ OW_INC    = ../../vendor/watcom/h
 OW_LIB    = ../../vendor/watcom/lib386
 OW_LIBDOS = ../../vendor/watcom/lib386/dos
 
-FONT_SRC  = $(ZINC_HOME)/BIN/HELVB.FON
-FONT_DST  = HELVB.FON
-
 !ifeq RELEASE 1
 CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d0 -s -ox &
            -I"$(ZINC_INC)" -I"$(OW_INC)"
@@ -38,13 +34,10 @@ CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d2 &
 OBJS = main.obj
 ZINC_APP_OBJ = z_app_txt.obj
 
-all: $(ZINC_LIB) $(FONT_DST) $(TARGET) .symbolic
+all: $(ZINC_LIB) $(TARGET) .symbolic
 
 $(ZINC_LIB):
 	sh ../../scripts/build-zinc-ow2.sh
-
-$(FONT_DST): $(FONT_SRC)
-	cp "$(FONT_SRC)" "$(FONT_DST)"
 
 $(ZINC_APP_OBJ): ../../vendor/zinc/SOURCE/z_app.CPP
 	$(CXX) $(CXXFLAGS) -dZIL_TEXT_ONLY -fo=$@ ../../vendor/zinc/SOURCE/z_app.CPP
@@ -66,4 +59,4 @@ release: .symbolic
 	wmake RELEASE=1
 
 clean: .symbolic
-	rm -f *.obj *.err $(TARGET) $(FONT_DST) $(ZINC_APP_OBJ)
+	rm -f *.obj *.err $(TARGET) $(ZINC_APP_OBJ)
