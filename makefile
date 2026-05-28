@@ -88,6 +88,4 @@ release: .symbolic
 	wmake RELEASE=1
 
 clean: .symbolic
-	@if exist *.obj del *.obj
-	@if exist *.err del *.err
-	@if exist $(TARGET) del $(TARGET)
+	rm -f *.obj *.err $(TARGET) HELVB.FON

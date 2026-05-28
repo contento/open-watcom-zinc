@@ -1,4 +1,4 @@
-// Open Zinc demo app - DOS/4GW 386 extended target (text mode)
+// Open Zinc demo app - DOS/4GW 386 extended target
 // Build with: wmake (Open Watcom 2.0)
 
 #include <ui_win.hpp>
