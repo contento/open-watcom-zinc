@@ -1,115 +1,72 @@
 # Environment Setup
 
-## Prerequisites
+## Quick Start
 
-### Open Watcom 2.0
+Run the setup script for your platform — it downloads Open Watcom 2.0 and
+Open Zinc into `vendor/` and builds the Zinc library:
 
-The C++ compiler and linker for DOS/4GW targets.
-
-**macOS (Homebrew)**
-
+**macOS / Linux**
 ```bash
-brew install open-watcom
+bash scripts/setup.sh         # install
+source scripts/setup.sh        # add to current shell
 ```
 
-Then set environment variables:
+**Windows (PowerShell)**
+```powershell
+.\scripts\setup.ps1           # dot-source to persist env vars
+```
 
+Then build any example:
 ```bash
+cd examples/hello-world
+wmake                          # debug build (text mode, safe on DOSBox-X)
+wmake ZINC_DISPLAY=WCC        # VGA graphics (may crash DOSBox-X, see BUILD.md)
+```
+
+## What the setup scripts do
+
+1. Download Open Watcom 2.0 snapshot (~140 MB) and extract to `vendor/watcom/`
+2. Download Open Zinc source to `vendor/zinc/`
+3. Build `D32_ZIL.LIB` (Zinc library for OW2) into `vendor/zinc/LIB/OW2/`
+
+After setup, `WATCOM`, `ZINC_HOME`, and `PATH` point to the vendored copies.
+The makefiles resolve these paths automatically — no manual configuration needed.
+
+## Manual Installation
+
+If you prefer a system-wide install:
+
+**macOS**
+```bash
+brew install open-watcom
 export WATCOM=$(brew --prefix open-watcom)
 export PATH=$WATCOM/binl64:$PATH
 ```
 
-**macOS (Manual Download)**
-
-Download from [open-watcom/open-watcom-v2/releases](https://github.com/open-watcom/open-watcom-v2/releases), extract, and set:
-
+**Linux** — download from [releases](https://github.com/open-watcom/open-watcom-v2/releases):
 ```bash
-export WATCOM=/path/to/watcom
+# Download open-watcom-2_0-c-linux-x64 from Current-build release
+export WATCOM=/opt/watcom
 export PATH=$WATCOM/binl64:$PATH
 ```
 
-**Linux**
+**Windows** — download the installer from [releases](https://github.com/open-watcom/open-watcom-v2/releases) and run. The installer sets `WATCOM` automatically.
 
-Download from [open-watcom/open-watcom-v2/releases](https://github.com/open-watcom/open-watcom-v2/releases), extract, and set:
+## DOSBox-X
 
+Install DOSBox-X to test the built EXEs:
+
+**macOS**
 ```bash
-export WATCOM=/path/to/watcom
-export PATH=$WATCOM/binl:$PATH
+brew install --cask dosbox-x
 ```
 
-**Windows**
-
-Download the Windows installer from [open-watcom/open-watcom-v2/releases](https://github.com/open-watcom/open-watcom-v2/releases) and run it. The installer will set `WATCOM` automatically.
-
-### Open Zinc
-
-The UI framework library for DOS targets. Must be compiled for DOS/4GW.
-
-Set the environment variable:
-
-```bash
-export ZINC_HOME=/path/to/zinc
-```
-
-The Zinc library should be at `$ZINC_HOME/LIB/OW2/D32_ZIL.LIB`.
-
-### DOSBox-X
-
-The emulator for testing DOS binaries.
-
-**macOS (Homebrew)**
-
-```bash
-brew install dosbox-x
-```
-
-**macOS (Manual)**
-
-Download from [DOSBox-X releases](https://github.com/joncampbell123/dosbox-x/releases), extract to `/Applications/DOSBox-X.app`, and the runner scripts will find it automatically.
-
-**Linux**
-
-```bash
-# Install from your package manager or build from source
-```
-
-**Windows**
-
-Download the Windows installer from [DOSBox-X releases](https://github.com/joncampbell123/dosbox-x/releases).
+**Linux / Windows** — see [DOSBox-X releases](https://github.com/joncampbell123/dosbox-x/releases)
 
 ## Verification
 
-Check that everything is set up:
-
 ```bash
-# Check Open Watcom
-which wpp386
 wpp386 -v
-
-# Check Open Zinc
-ls $ZINC_HOME/LIB/OW2/D32_ZIL.LIB
-
-# Check DOSBox-X
-which dosbox-x
+ls vendor/zinc/LIB/OW2/D32_ZIL.LIB
 dosbox-x -version
-```
-
-## Full Environment
-
-Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.):
-
-```bash
-# Open Watcom
-export WATCOM=/opt/watcom          # or brew --prefix open-watcom
-export PATH=$WATCOM/binl64:$PATH   # macOS/Linux, adjust for Windows
-
-# Open Zinc
-export ZINC_HOME=/opt/zinc         # or wherever you installed it
-export INCLUDE=$ZINC_HOME/INCLUDE  # optional, makefiles set this
-```
-
-Then reload your shell:
-
-```bash
-source ~/.zshrc  # or ~/.bashrc, ~/.profile, etc.
 ```

@@ -1,74 +1,68 @@
 #!/usr/bin/env bash
-# setup.sh — bootstrap Open Watcom and Open Zinc for local development
-# Usage:  bash scripts/setup.sh
-#         source scripts/setup.sh   (to also export env vars in current shell)
+# scripts/setup.sh — Install Open Watcom 2.0 + Open Zinc to vendor/
+#
+# Usage:
+#   bash scripts/setup.sh                 # install, print env to set manually
+#   source scripts/setup.sh               # install + export env in current shell
+#
+# Supported: macOS (Intel + Apple Silicon), Linux (x86_64, aarch64)
+
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENDOR_DIR="$REPO_ROOT/vendor"
+OW_DIR="$VENDOR_DIR/watcom"
 ZINC_DIR="$VENDOR_DIR/zinc"
 ZINC_URL="http://www.openzinc.com/Downloads/OZ1.zip"
 
-# ── helpers ────────────────────────────────────────────────────────────────
+OW_RELEASE="https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build"
+OW_SNAPSHOT="$OW_RELEASE/ow-snapshot.tar.xz"
+
+# ── helpers ────────────────────────────────────────────────────────────────────
 info()  { echo "[setup] $*"; }
-error() { echo "[setup] ERROR: $*" >&2; exit 1; }
+err()   { echo "[setup] ERROR: $*" >&2; exit 1; }
+req()   { command -v "$1" &>/dev/null || err "'$1' not found — install it first."; }
 
-require() {
-    command -v "$1" &>/dev/null || error "'$1' not found — please install it first."
-}
-
-# ── detect host platform ────────────────────────────────────────────────────
+# ── detect platform ────────────────────────────────────────────────────────────
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
-# ow-snapshot.tar.xz contains host binaries for all platforms; pick the right subdir.
-# There is no separate macOS asset — the snapshot is the canonical download.
 case "$OS" in
     Darwin)
-        # bino64 = macOS Intel x64, armo64 = macOS Apple Silicon
-        if [ "$ARCH" = "arm64" ]; then
-            OW_BINDIR="armo64"
-        else
-            OW_BINDIR="bino64"
-        fi
+        [ "$ARCH" = "arm64" ] && OW_BINDIR="armo64" || OW_BINDIR="bino64"
+        OW_EXE="$OW_DIR/$OW_BINDIR"
         ;;
     Linux)
-        if [ "$ARCH" = "x86_64" ]; then
-            OW_BINDIR="binl64"
-        elif [ "$ARCH" = "aarch64" ]; then
-            OW_BINDIR="arml64"
-        else
-            OW_BINDIR="binl"
-        fi
+        [ "$ARCH" = "aarch64" ] && OW_BINDIR="arml64" || OW_BINDIR="binl64"
+        OW_EXE="$OW_DIR/$OW_BINDIR"
         ;;
     *)
-        error "Unsupported OS: $OS — use setup.bat on Windows."
+        err "Use scripts/setup.ps1 on Windows."
         ;;
 esac
 
-OW_DIR="$VENDOR_DIR/watcom"
-OW_SNAPSHOT_URL="https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz"
+# ── Step 1: Open Watcom 2.0 ────────────────────────────────────────────────────
+req curl
+req tar
 
-# ── Open Watcom ─────────────────────────────────────────────────────────────
-require curl
-require tar
-
-if [ -d "$OW_DIR/$OW_BINDIR" ]; then
+if [ -f "$OW_EXE/wmake" ]; then
     info "Open Watcom already present at $OW_DIR"
 else
-    info "Downloading Open Watcom snapshot..."
+    info "Downloading Open Watcom snapshot (~140 MB)..."
     mkdir -p "$OW_DIR"
-    curl -fsSL "$OW_SNAPSHOT_URL" -o /tmp/owatcom.tar.xz
-    tar -xf /tmp/owatcom.tar.xz -C "$OW_DIR" --strip-components=1
-    rm /tmp/owatcom.tar.xz
+    curl -fsSL "$OW_SNAPSHOT" -o /tmp/ow-snapshot.tar.xz
+    tar -xf /tmp/ow-snapshot.tar.xz -C "$OW_DIR" --strip-components=1
+    rm /tmp/ow-snapshot.tar.xz
+    if [ ! -f "$OW_EXE/wmake" ]; then
+        err "Snapshot extracted but $OW_EXE/wmake not found — unexpected layout."
+    fi
     info "Open Watcom installed → $OW_DIR"
 fi
 
-# ── Open Zinc ───────────────────────────────────────────────────────────────
-# OZ1.zip is a pre-built binary distribution — no compilation required.
-require unzip
+# ── Step 2: Open Zinc source ───────────────────────────────────────────────────
+req unzip
 
-if [ -f "$ZINC_DIR/LIB/OW19/D32_ZIL.LIB" ]; then
+if [ -d "$ZINC_DIR/SOURCE" ]; then
     info "Open Zinc already present at $ZINC_DIR"
 else
     info "Downloading Open Zinc..."
@@ -76,21 +70,37 @@ else
     curl -fsSL "$ZINC_URL" -o /tmp/OZ1.zip
     unzip -q /tmp/OZ1.zip -d "$ZINC_DIR"
     rm /tmp/OZ1.zip
+    if [ ! -d "$ZINC_DIR/SOURCE" ]; then
+        err "Zinc zip extracted but SOURCE/ directory not found."
+    fi
     info "Open Zinc ready → $ZINC_DIR"
 fi
 
-# ── print env exports ────────────────────────────────────────────────────────
+# ── Step 3: Build Zinc library for OW2 ─────────────────────────────────────────
+# build-zinc-ow2.sh is also run automatically by every makefile via common.mk,
+# but we build it here so the first `wmake` is fast.
+if [ -f "$ZINC_DIR/LIB/OW2/D32_ZIL.LIB" ]; then
+    info "Zinc OW2 library already built"
+else
+    info "Building Zinc library for Open Watcom 2.0..."
+    PATH="$OW_EXE:$PATH" WATCOM="$OW_DIR" \
+        bash "$REPO_ROOT/scripts/build-zinc-ow2.sh"
+    info "Zinc OW2 library built → $ZINC_DIR/LIB/OW2/D32_ZIL.LIB"
+fi
+
+# ── export env vars for caller ─────────────────────────────────────────────────
 export WATCOM="$OW_DIR"
 export ZINC_HOME="$ZINC_DIR"
-export PATH="$OW_DIR/$OW_BINDIR:$PATH"
+export PATH="$OW_EXE:$PATH"
 
 info "────────────────────────────────────────"
-info "WATCOM   = $WATCOM"
-info "ZINC_HOME= $ZINC_HOME"
+info "Setup complete."
+info "  WATCOM    = $OW_DIR"
+info "  ZINC_HOME = $ZINC_DIR"
 info ""
-info "To persist these in your current shell, run:"
+info "To persist in this shell, source the script:"
 info "  source scripts/setup.sh"
 info ""
-info "To build the demo:"
-info "  wmake"
+info "Now build any example:"
+info "  cd examples/hello-world && wmake"
 info "────────────────────────────────────────"
