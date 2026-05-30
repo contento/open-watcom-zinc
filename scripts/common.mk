@@ -10,10 +10,8 @@
 #
 # Optional variables:
 #   ZINC_DISPLAY  - "TEXT" (default, safe on DOSBox-X + real DOS)
-#                   "WCC"  (VGA graphics, may crash DOSBox-X, works on real HW)
+#                   "WCC"  (VGA graphics, may crash DOSBox-X, needs HELVB.FON)
 #   ZINC_HOME     - override default $(PROJECT_ROOT)/vendor/zinc
-#
-# Targets provided:  all, release, clean, z_app.obj, $(TARGET)
 
 !ifndef PROJECT_ROOT
 !error PROJECT_ROOT must be set before including common.mk
@@ -48,6 +46,8 @@ CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d2 &
 !endif
 
 # ── display mode ───────────────────────────────────────────────────────────────
+# Compile z_app.CPP with the chosen display mode and link it before the library
+# so the linker resolves UI_APPLICATION from the override, not the WCC default.
 !ifeq ZINC_DISPLAY TEXT
 ZAPP_FLAGS = -dZIL_TEXT_ONLY
 !else
@@ -55,6 +55,48 @@ ZAPP_FLAGS = -dWCC
 !endif
 
 ZAPP_OBJ = z_app.obj
+
+# ── wlink OW1→OW2 symbol aliases for graph.lib ────────────────────────────────
+# graph.lib was compiled with OW 1.9 which uses _name (no trailing underscore).
+# OW 2.0 exports _name_, so we alias all graph function references.
+GRAPH_ALIASES = &
+		alias _registerfonts_   = _registerfonts &
+		alias _getvideoconfig_  = _getvideoconfig &
+		alias _gettextcursor_   = _gettextcursor &
+		alias _setvideomode_    = _setvideomode &
+		alias _remappalette_    = _remappalette &
+		alias _settextcursor_   = _settextcursor &
+		alias _clearscreen_     = _clearscreen &
+		alias _setviewport_     = _setviewport &
+		alias _setcolor_        = _setcolor &
+		alias _setpixel_        = _setpixel &
+		alias _setfillmask_     = _setfillmask &
+		alias _ellipse_         = _ellipse &
+		alias _pie_             = _pie &
+		alias _getpixel_        = _getpixel &
+		alias _moveto_          = _moveto &
+		alias _lineto_          = _lineto &
+		alias _polygon_         = _polygon &
+		alias _rectangle_       = _rectangle &
+		alias _setlinestyle_    = _setlinestyle &
+		alias _imagesize_       = _imagesize &
+		alias _getimage_        = _getimage &
+		alias _putimage_        = _putimage &
+		alias _outgtext_        = _outgtext &
+		alias _setfont_         = _setfont &
+		alias _setplotaction_   = _setplotaction &
+		alias _getfontinfo_     = _getfontinfo &
+		alias _getgtextextent_  = _getgtextextent &
+		alias _setvideomoderows_ = _setvideomoderows &
+		alias _settextposition_ = _settextposition &
+		alias malloc            = malloc_ &
+		alias memset            = memset_ &
+		alias free              = free_ &
+		alias _ExtenderRealModeSelector = __ExtenderRealModeSelector &
+		alias _Extender         = __Extender &
+		alias _DPMI             = __DPMI &
+		alias _STACKLOW         = __STACKLOW &
+		alias dos_get_dbcs_lead_table = dos_get_dbcs_lead_table_
 
 # ── targets ────────────────────────────────────────────────────────────────────
 all: $(ZINC_LIB) $(TARGET) .symbolic
@@ -71,12 +113,8 @@ $(TARGET): $(OBJS) $(ZAPP_OBJ)
 		file $(ZAPP_OBJ) &
 		file {$(OBJS)} &
 		lib "$(ZINC_LIB)" &
+		lib "$(OW_LIBDOS)/graph.lib" &
 		lib "$(OW_LIBDOS)/clib3r.lib" &
 		libpath "$(OW_LIB)" &
-		libpath "$(OW_LIBDOS)"
-
-release: .symbolic
-	wmake RELEASE=1
-
-clean: .symbolic
-	rm -f *.obj *.err $(TARGET)
+		libpath "$(OW_LIBDOS)" &
+		$(GRAPH_ALIASES)

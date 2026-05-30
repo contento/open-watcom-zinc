@@ -17,4 +17,4 @@ main.obj: main.cpp
 	$(CXX) $(CXXFLAGS) -fo=$@ main.cpp
 
 clean: .symbolic
-	rm -f *.obj *.err $(TARGET)
+	rm -f *.obj *.err $(TARGET) z_app.obj

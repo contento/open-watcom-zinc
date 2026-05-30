@@ -1,7 +1,8 @@
 #!/bin/sh
 # Recompile the Open Zinc DOS/4GW library using Open Watcom 2.0.
-# Required because OW 2.0 changed C++ name mangling (uppercase vs lowercase),
-# making the pre-built OW19 library binary-incompatible.
+#
+# Produces:
+#   vendor/zinc/LIB/OW2/D32_ZIL.LIB — WCC graphics build
 #
 # Run once from the project root: sh scripts/build-zinc-ow2.sh
 
@@ -14,7 +15,6 @@ OUT_DIR=vendor/zinc/LIB/OW2
 OUT_LIB=$OUT_DIR/D32_ZIL.LIB
 OBJ_DIR=/tmp/zinc_ow2_obj
 
-# Same flags as ow19.mak D32 target, adapted for OW2 on Unix host
 CFLAGS="-bt=dos4g -3 -mf -fp3 -dDOS386 -zq -w0 -I$ZINC_INC -I$OW_INC"
 
 echo "Building Open Zinc DOS/4GW library for Open Watcom 2.0..."
@@ -24,7 +24,6 @@ echo ""
 
 mkdir -p "$OBJ_DIR" "$OUT_DIR"
 
-# Compile every source file that was in the original D32_ZIL.LIB
 SOURCES="
 d_bnum d_border d_button d_combo d_cursor d_date
 d_error d_error1 d_event d_fmtstr d_group d_hlist
@@ -54,10 +53,8 @@ OBJS=""
 FAILED=0
 
 for base in $SOURCES; do
-    # source files are uppercase on disk
-    src=$(echo "$ZINC_SRC/${base}.CPP")
+    src="$ZINC_SRC/${base}.CPP"
     obj="$OBJ_DIR/${base}.obj"
-
     printf "  Compiling %-25s ... " "${base}.CPP"
     if wpp386 $CFLAGS -fo="$obj" "$src" 2>/tmp/zinc_compile_err; then
         echo "ok"
@@ -69,8 +66,6 @@ for base in $SOURCES; do
     fi
 done
 
-# z_app.CPP compiled with -dWCC: tries UI_WCC_DISPLAY first, falls back to
-# UI_TEXT_DISPLAY automatically if the WCC display fails to initialize.
 printf "  Compiling %-25s (WCC) ... " "z_app.CPP"
 if wpp386 $CFLAGS -dWCC -fo="$OBJ_DIR/z_app.obj" "$ZINC_SRC/z_app.CPP" 2>/tmp/zinc_compile_err; then
     echo "ok"
@@ -89,10 +84,9 @@ fi
 echo ""
 echo "Creating library $OUT_LIB ..."
 rm -f "$OUT_LIB"
-# wlib expects +obj args; pass them via response file to avoid arg length limits
 RESP=/tmp/zinc_ow2.rsp
 echo "$OUT_LIB" > "$RESP"
-for obj in $OBJ_DIR/*.obj; do
+for obj in "$OBJ_DIR"/*.obj; do
     echo "+$obj" >> "$RESP"
 done
 wlib -p=64 -q "@$RESP"

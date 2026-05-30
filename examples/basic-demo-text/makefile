@@ -25,4 +25,4 @@ main.obj: src/main.cpp
 	$(CXX) $(CXXFLAGS) -fo=$@ src/main.cpp
 
 clean: .symbolic
-	rm -f *.obj *.err $(TARGET) $(FONT_DST)
+	rm -f *.obj *.err $(TARGET) $(FONT_DST) z_app.obj
