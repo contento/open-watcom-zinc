@@ -1,50 +1,31 @@
 # Open Watcom wmake - DOS/4GW 32-bit target
-# Usage:
-#   wmake           - debug build
-#   wmake release   - optimised build
-#   wmake clean     - remove generated files
+# Root demo (WCC graphics mode — VGA graphics, may crash DOSBox-X)
 #
-# ZINC_HOME is resolved automatically from vendor/zinc if not set.
+# Usage:
+#   wmake                        - debug build (WCC mode, needs HELVB.FON)
+#   wmake ZINC_DISPLAY=TEXT      - text mode (safe on DOSBox-X)
+#   wmake release                - optimised build
+#   wmake clean                  - remove generated files
 
-TARGET   = demo.exe
+PROJECT_ROOT = .
+TARGET = demo.exe
+OBJS   = main.obj
+ZINC_DISPLAY = WCC
 
-CXX      = wpp386
-LINKER   = wlink
+!include $(PROJECT_ROOT)/scripts/common.mk
 
-!ifndef ZINC_HOME
-ZINC_HOME = vendor/zinc
-!endif
-
-ZINC_INC  = $(ZINC_HOME)/INCLUDE
-ZINC_LIB  = $(ZINC_HOME)/LIB/OW2/D32_ZIL.LIB
-OW_INC    = vendor/watcom/h
-OW_LIB    = vendor/watcom/lib386
-OW_LIBDOS = vendor/watcom/lib386/dos
-
-FONT_SRC  = $(ZINC_HOME)/BIN/HELVB.FON
-FONT_DST  = HELVB.FON
-
-!ifeq RELEASE 1
-CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d0 -s -ox &
-           -I"$(ZINC_INC)" -I"$(OW_INC)"
-!else
-CXXFLAGS = -bt=dos4g -3 -mf -fp3 -w4 -d2 &
-           -I"$(ZINC_INC)" -I"$(OW_INC)"
-!endif
-
-OBJS = main.obj
+FONT_SRC = $(ZINC_HOME)/BIN/HELVB.FON
+FONT_DST = HELVB.FON
 
 all: $(ZINC_LIB) $(FONT_DST) $(TARGET) .symbolic
-
-$(ZINC_LIB):
-	sh scripts/build-zinc-ow2.sh
 
 $(FONT_DST): $(FONT_SRC)
 	cp "$(FONT_SRC)" "$(FONT_DST)"
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) $(ZAPP_OBJ)
 	$(LINKER) system dos4g &
 		name $(TARGET) &
+		file $(ZAPP_OBJ) &
 		file {$(OBJS)} &
 		lib "$(ZINC_LIB)" &
 		lib "$(OW_LIBDOS)/graph.lib" &
@@ -89,9 +70,6 @@ $(TARGET): $(OBJS)
 
 main.obj: src/main.cpp
 	$(CXX) $(CXXFLAGS) -fo=$@ src/main.cpp
-
-release: .symbolic
-	wmake RELEASE=1
 
 clean: .symbolic
 	rm -f *.obj *.err $(TARGET) HELVB.FON

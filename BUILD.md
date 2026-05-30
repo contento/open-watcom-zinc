@@ -131,27 +131,33 @@ Re-run the script if you modify any file in `vendor/zinc/SOURCE/`.
 
 ---
 
-## 5. Building the Demo App
+## 5. Building the Demo App & Examples
+
+All example makefiles include `scripts/common.mk` — a shared fragment that
+handles compiler flags, `z_app.CPP` display mode, and linking. You only need
+to define `PROJECT_ROOT`, `TARGET`, and `OBJS` in your example's makefile.
+
+### Display mode selection
+
+Set `ZINC_DISPLAY` to choose the Zinc display driver:
+
+| Value   | Effect |
+|---------|--------|
+| `TEXT` (default) | Uses `UI_TEXT_DISPLAY` directly — stable on DOSBox-X and real DOS, no graphics dependencies |
+| `WCC`            | Tries `UI_WCC_DISPLAY` (VGA), falls back to text if init fails — **may crash DOSBox-X** (see §8) |
 
 ```sh
-wmake           # debug build → demo.exe
-wmake release   # optimised build
-wmake clean     # remove demo.exe and *.obj
+wmake                      # text mode (safe)
+wmake ZINC_DISPLAY=WCC     # WCC graphics mode
+wmake ZINC_DISPLAY=WCC RELEASE=1  # release build with graphics
 ```
 
-`wmake` detects whether `vendor/zinc/LIB/OW2/D32_ZIL.LIB` exists and runs `build-zinc-ow2.sh` automatically if it is missing.
+### Root demo (WCC graphics)
 
-### What gets linked
-
-`demo.exe` links against:
-
-| Library | Purpose |
-|---------|---------|
-| `D32_ZIL.LIB` | Open Zinc UI framework |
-| `graph.lib` | WCC graphics (VGA, font rendering) |
-| `clib3r.lib` | Open Watcom C runtime (re-entrant) |
-
-`graph.lib` is the OW 1.9-era graphics library. Because it was compiled with OW 1.x, it exports symbols without the OW 2.x trailing underscore (e.g. `_setvideomode` vs. `_setvideomode_`). The makefile bridges this with **35 `alias` directives** in the wlink command (see §10).
+```sh
+wmake                      # uses ZINC_DISPLAY=WCC by default
+wmake ZINC_DISPLAY=TEXT    # override to text mode
+```
 
 ---
 
@@ -171,7 +177,16 @@ Builds three HELLO tutorials into `tutorials/hello/`:
 
 ### How it works
 
-The tutorial build uses a **text-only display override**:
+The example-based makefiles (hello-world, basic-demo, phone-keypad-fresh, etc.)
+include `scripts/common.mk` which handles:
+- Standard compiler flags (`-bt=dos4g -3 -mf -fp3 -w4 ...`)
+- Display mode: `ZINC_DISPLAY=TEXT` (default, safe) or `ZINC_DISPLAY=WCC` (graphics)
+- Recompiling `z_app.CPP` with the right display mode and linking it before the library
+- Automatic Zinc library build via `build-zinc-ow2.sh` if `D32_ZIL.LIB` is missing
+
+Each example makefile is now 10-15 lines instead of 60+.
+
+The tutorial shell script (`build-tutorials.sh`) uses the same text-only technique directly.
 
 1. `z_app.CPP` is recompiled with `-dZIL_TEXT_ONLY` (forces `UI_TEXT_DISPLAY` directly).
 2. The resulting `z_app_txt.obj` is linked *before* `D32_ZIL.LIB`, so the linker uses the override and skips the WCC/graphics version baked into the library.
@@ -265,7 +280,7 @@ SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
 
 **Status**: Under investigation. The crash comes from calling graph functions, not from merely linking `graph.lib`.
 
-**Workaround for stable builds**: Use text-only display (as the tutorials do). Set `-dZIL_TEXT_ONLY` when compiling `z_app.CPP` and omit `graph.lib` from the linker command.
+**Workaround for stable builds**: Use text-only display by setting `ZINC_DISPLAY=TEXT` on the make command line (or in the makefile). This recompiles `z_app.CPP` with `-dZIL_TEXT_ONLY` and omits `graph.lib` from the link. All example makefiles support this via the shared `scripts/common.mk` fragment — no manual makefile editing needed.
 
 **Workaround for demo.exe**: The `D32_ZIL.LIB` library was compiled with `-dWCC`, which tries WCC graphics first and is supposed to fall back to text if initialisation fails. The fallback is implemented in `vendor/zinc/SOURCE/Z_APP.CPP` lines 180-214. However, the constructor crashes before returning `installed == FALSE`.
 
