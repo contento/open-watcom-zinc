@@ -1,0 +1,34 @@
+# Generated artifacts
+graphify-out/
+*.o
+*.obj
+*.exe
+*.exp
+*.lib
+
+# External dependencies
+vendor/
+
+# Build directories
+build/
+dist/
+.build/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System files
+.DS_Store
+Thumbs.db
+
+# DOSBox configurations (less relevant to code structure)
+dosbox-x.conf
+*.conf
+
+# Runtime artifacts
+*.err
+*.log

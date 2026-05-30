@@ -20,5 +20,8 @@ vendor/
 # AI memory files
 memory/
 
+# Graphify knowledge graph output (https://github.com/safishamsi/graphify)
+graphify-out/
+
 # macOS
 .DS_Store
